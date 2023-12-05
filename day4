@@ -14,11 +14,11 @@ typedef struct {
     int countMatch;
 } Card;
 
-int compare(const void* a, const void* b);
-void read_matrix_from_file_day4(char* file_path, int matrix_have[ROWS_day4][COLS_have_day4], int matrix_winning[ROWS_day4][COLS_winning_day4]);
+int compare(const void* , const void* );
+void read_matrix_from_file_day4(char* , int matrix_have[ROWS_day4][COLS_have_day4], int matrix_winning[ROWS_day4][COLS_winning_day4]);
 int day4(char*);
-void processCopies(Card* cards, int index, int count);
-int calculateSum_cards(Card arr[], int size);
+void processCopies(Card* , int , int );
+int calculateSum_cards(Card arr[], int);
 int day4_b(char*);
 
 void main()
