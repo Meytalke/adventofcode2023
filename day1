@@ -10,9 +10,9 @@ int day1_b(char*);
 
 void main()
 {
-    int resday1 = day1("day4.txt");
+    int resday1 = day1("day1.txt");
     printf("\n\n%d", res);
-    int resday1_b = day1_b("day4.txt");
+    int resday1_b = day1_b("day1.txt");
     printf("\n\n%d", resday1);
     printf("\n\n%d", resday1_b);
     return 0;
