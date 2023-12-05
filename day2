@@ -1,0 +1,170 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+int day2(char*);
+int day2_b(char*);
+
+void main()
+{
+    int res = day2_b("day2.txt");
+    printf("\n\n%d", res);
+    return 0;
+}
+
+int day2(char* ft)
+{
+    int res = 0;
+    int targetRed = 12, targetGreen = 13, targetBlue = 14, game, num, numOfRed, numOfBlue, numOfGreen;
+    char line[200];
+    FILE* file = fopen(ft, "r");
+    if (file == NULL) {
+        printf("Can't open the file\n");
+        return 1;
+    }
+    while (fgets(line, sizeof(line), file)) {
+        int h = 0, flag = 0;
+
+        char* token, * saveptr1, * saveptr2;
+
+        token = strtok_s(line, ":", &saveptr1);
+        for (int i = 0; token[i] != '\0'; i++) {
+            if (isdigit(token[i])) {
+                if (h == 0) {
+                    game = token[i] - '0';
+                    h = 1;
+                }
+                else {
+                    game = game * 10 + token[i] - '0';
+                }
+            }
+        }
+        token = strtok_s(NULL, ";", &saveptr1);
+        while (token != NULL)
+        {
+            numOfRed = numOfBlue = numOfGreen = h = 0;
+            char* subToken = strtok_s(token, ",", &saveptr2);
+            while (subToken != NULL)
+            {
+                num = 0;
+                for (int i = 0; subToken[i] != '\0'; i++)
+                {
+                    if (isdigit(subToken[i]))
+                    {
+                        if (h == 0)
+                        {
+                            num = subToken[i] - '0';
+                            h = 1;
+                        }
+                        else
+                        {
+                            num = num * 10 + subToken[i] - '0';
+                        }
+                    }
+                    else if (num != 0)
+                    {
+                        if (strstr(subToken, "red") != NULL)
+                        {
+                            numOfRed = num;
+                        }
+                        else if (strstr(subToken, "green") != NULL)
+                        {
+                            numOfGreen = num;
+                        }
+                        else if (strstr(subToken, "blue") != NULL)
+                        {
+                            numOfBlue = num;
+                        }
+                    }
+
+                }
+                if (numOfRed > targetRed || numOfGreen > targetGreen || numOfBlue > targetBlue) {
+                    flag = 1;
+                    break;
+                }
+
+                subToken = strtok_s(NULL, ",", &saveptr2);
+            }
+            token = strtok_s(NULL, ";", &saveptr1);
+        }
+        if (flag == 0) {
+            res += game;
+        }
+    }
+    fclose(file);
+    return res;
+}
+int day2_b(char* ft) 
+{
+    int res = 0;
+    int num, numOfRed, numOfBlue, numOfGreen;
+    char line[200];
+    FILE* file = fopen(ft, "r");
+    if (file == NULL) {
+        printf("Can't open the file\n");
+        return 1;
+    }
+    while (fgets(line, sizeof(line), file)) 
+    {
+        int flag = 0;
+        numOfRed = numOfBlue = numOfGreen = 0;
+        char* token, * saveptr1, * saveptr2;
+        token = strtok_s(line, ":", &saveptr1);
+        token = strtok_s(NULL, ";", &saveptr1);
+        while (token != NULL) 
+        {    
+            flag =0;
+            char* subToken = strtok_s(token, ",", &saveptr2);
+            while (subToken != NULL) 
+            {
+                num = 0;
+                for (int i = 0; subToken[i] != '\0'; i++) 
+                {
+                    if (isdigit(subToken[i])) 
+                    {
+                      if (flag == 0)
+                        {
+                          num = subToken[i] - '0';
+                          flag = 1;
+                        }
+                       else
+                        {
+                          num = num * 10 + subToken[i] - '0';
+                        }
+                    }
+                    else if (num != 0)
+                    {
+                      if (strstr(subToken, "red") != NULL)
+                      {
+                        if (num > numOfRed)
+                        {
+                            numOfRed = num;
+                        }
+                      }
+                      else if (strstr(subToken, "green") != NULL)
+                      {
+                        if (num > numOfGreen)
+                        {
+                            numOfGreen = num;
+                        }
+                      }
+                      else if (strstr(subToken, "blue") != NULL)
+                      {
+                        if (num > numOfBlue)
+                        {
+                            numOfBlue = num;
+                        }
+                      }
+                    }
+                }
+                subToken = strtok_s(NULL, ",", &saveptr2);
+            }
+            token = strtok_s(NULL, ";", &saveptr1);
+        }
+        res += numOfRed * numOfBlue * numOfGreen;
+    }
+    fclose(file);
+    return res;
+}
