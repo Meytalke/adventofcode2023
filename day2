@@ -11,9 +11,9 @@ void main()
 {
     int resday2 = day1("day2.txt");
     printf("\n\n%d", res);
-    int resday2_b = day1_b("day2.txt");
-    printf("\n\n%d", resday1);
-    printf("\n\n%d", resday1_b);
+    int resday2_b = day2_b("day2.txt");
+    printf("\n\n%d", resday2);
+    printf("\n\n%d", resday2_b);
     return 0
 }
 
