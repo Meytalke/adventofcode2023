@@ -1,0 +1,250 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define ROWS 140
+#define COLS 140
+
+int is_symbol(char ch);
+int CheckIfValidNumber(char matrix[ROWS][COLS],int,int,int,int);
+int day3(char*);
+int calculateSum(int arr[], int size);
+int isAsteriskChar(char ch);
+int findTheNumber(char matrix[ROWS][COLS], int, int, int, int);
+int thereIs2NumbersAroundToAsterisk(char matrix[ROWS][COLS], int, int, int, int,int*,int*);
+int day3_b(char*);
+
+void main()
+{
+    int resday3 = day3("day3.txt");
+    printf("\n\n%d", res);
+    int resday3_b = day3_b("day3.txt");
+    printf("\n\n%d", resday3);
+    printf("\n\n%d", resday3_b);
+    return 0
+}
+
+int is_symbol(char ch)
+{
+    if (!isdigit(ch) && ch != '.')
+    {
+        return 1;
+    }
+    return 0;
+}
+void read_matrix_from_file(char* file_path, char matrix[ROWS+2][COLS+2])
+{
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        printf("Cannot open file %s\n", file_path);
+        return;
+    }
+
+    for (int i = 0; i < ROWS + 1; i++)
+    {
+        if (fgets(matrix[i], COLS + 2, file) == NULL) {
+            break;
+        }
+    }
+
+    fclose(file);
+}
+int CheckIfValidNumber(char matrix[ROWS-1][COLS+2], int starti, int startj, int endi, int endj)
+{
+    for (int i = starti; i <= endi; ++i)
+    {
+        for (int j = startj; j <= endj; ++j)
+        {
+            char currentChar = matrix[i][j];
+            if (!(isdigit(currentChar) || currentChar == '.' || currentChar == '\0' || currentChar == '\n' || currentChar == EOF))
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+int calculateSum(int arr[], int size) {
+    int sum = 0;
+    for (int i = 0; i < size; i++)
+    {
+        sum += arr[i];
+        if (arr[i] == 0)
+        {
+            break;
+        }
+    }
+    return sum;
+}
+int day3(char* ft)
+{
+    int num = 0, res = 0,k,count = 0, starti, endi, startj, endj, flag = 0;
+    int conToNumS, conToNumE;
+    char matrix[ROWS][COLS + 2];
+    int list[1800] = { 0 };
+    read_matrix_from_file(ft, matrix);
+    for (int i = 0; i < ROWS; i++)
+    {
+        //printf("line %d: %s",i , matrix[i]); 
+        for (int j = 0; j < COLS+2; j++)
+        {  
+            if (matrix[i][j] == '\0')
+            {
+                break;
+            }
+            if (isdigit(matrix[i][j]))
+            {
+                if (flag == 0)
+                {
+                    starti = (i == 0) ? 0 : (i - 1);
+                    startj = (j == 0) ? 0 : (j - 1);
+                    flag = 1;
+                    conToNumS = j;
+                    if (!isdigit(matrix[i][j + 1]))
+                    {
+                        endi = i + 1;
+                        endj = j + 1;
+                        conToNumE = j;
+                        num = matrix[i][conToNumS] - '0';
+                        if (CheckIfValidNumber(matrix, starti, startj, endi, endj))
+                        {
+                            list[count++] = num;
+                        }
+                        flag = 0;
+                        num = 0;
+                    }
+                }
+                else
+                {
+                    if (!isdigit(matrix[i][j + 1]))
+                    {
+                        endi = (i == ROWS - 1) ? ROWS - 1 : (i + 1);
+                        endj = (j == COLS - 1) ? COLS - 1 : j + 1;
+                        conToNumE = j;
+                        for (int h = conToNumS; h <= conToNumE; h++)
+                        {
+                            if (conToNumS == conToNumE) {
+                                num = matrix[i][conToNumS] - '0';
+                            }
+                            num = num * 10 + matrix[i][h] - '0';
+                        }
+                        if (CheckIfValidNumber(matrix, starti, startj, endi, endj))
+                        {
+                            list[count++] = num;
+                            if (count == 1075)
+                            {
+                                int dfdf = 0;
+                            }
+                        }
+                        flag = 0;
+                        num = 0;
+                    }
+        
+                }
+            }
+        }
+    }
+    return calculateSum(list, count);
+}
+int isAsteriskChar(char ch)
+{
+    if (ch == '*')
+    {
+        return 1;
+    }
+    return 0;
+}
+int findTheNumber(char matrix[ROWS - 1][COLS + 2], int startj,int i)
+{
+    int num = 0;
+    while (isdigit(matrix[i][startj]) && startj>0)
+    {
+        if (startj - 1 >= 0 && isdigit(matrix[i][startj-1]))
+        {
+            startj--;
+        } 
+        else
+        {
+            break;
+        }
+    }
+    while (isdigit(matrix[i][startj]) && startj<= COLS)
+    {
+        num = num * 10 + matrix[i][startj] - '0';
+        startj++;
+    }
+    return num;
+}
+int thereIs2NumbersAroundToAsterisk(char matrix[ROWS - 1][COLS + 2], int starti, int startj, int endi, int endj, int* num1, int* num2)
+{
+    int num = 0;
+    *num1 = *num2 = 0;
+    for (int i = starti; i <= endi; ++i)
+    {
+        for (int j = startj; j <= endj; ++j)
+        {
+            char currentChar = matrix[i][j];
+            if (isdigit(matrix[i][j]))
+            {
+                if (*num1 == 0)
+                {
+                    num = findTheNumber(matrix, j, i);;
+                    *num1 = num;
+                    num = 0;
+                }
+                else
+                {
+                    if (*num2 == 0)
+                    {
+                        num = findTheNumber(matrix, j, i);
+                        if (num != *num1)
+                        {
+                            *num2 = num;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (*num1 != 0 && *num2 != 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+int day3_b(char* ft)
+{
+    int res = 0, starti, endi, startj, endj, num1, num2;
+    char matrix[ROWS][COLS + 2];
+    read_matrix_from_file(ft, matrix);
+    for (int i = 0; i < ROWS; i++)
+    {
+        for (int j = 0; j < COLS + 2; j++)
+        {
+            if (matrix[i][j] == '\0')
+            {
+                break;
+            }
+            if (isAsteriskChar(matrix[i][j]))
+            {
+                num1 = num2 = 0;
+                starti = (i == 0) ? 0 : (i - 1);
+                startj = (j == 0) ? 0 : (j - 1);
+                endi = (i == ROWS - 1) ? ROWS - 1 : (i + 1);
+                endj = (j == COLS - 1) ? COLS - 1 : j + 1;
+                if (thereIs2NumbersAroundToAsterisk(matrix, starti, startj, endi, endj, &num1, &num2))
+                {
+                    res += num1 * num2;
+                }
+            }
+        }
+    }
+    return res;
+}
