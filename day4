@@ -1,0 +1,183 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define ROWS_day4 199
+#define COLS_have_day4 25
+#define COLS_winning_day4 10
+
+typedef struct {
+    int countCards; 
+    bool flag;  
+    int countMatch;
+} Card;
+
+int compare(const void* a, const void* b);
+void read_matrix_from_file_day4(char* file_path, int matrix_have[ROWS_day4][COLS_have_day4], int matrix_winning[ROWS_day4][COLS_winning_day4]);
+int day4(char*);
+void processCopies(Card* cards, int index, int count);
+int calculateSum_cards(Card arr[], int size);
+int day4_b(char*);
+
+void main()
+{
+    int resday4 = day4("day4.txt");
+    printf("\n\n%d", res);
+    int resday4_b = day4_b("day4.txt");
+    printf("\n\n%d", resday4);
+    printf("\n\n%d", resday4_b);
+    return 0
+}
+
+int compare(const void* a, const void* b) 
+{
+    return (*(int*)a - *(int*)b);
+}
+void read_matrix_from_file_day4(char* file_path, int matrix_have[ROWS_day4][COLS_have_day4], int matrix_winning[ROWS_day4][COLS_winning_day4], int rowsToRead) {
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        printf("Cannot open file %s\n", file_path);
+        return;
+    }
+    for (int i = 0; i < rowsToRead; i++) 
+    {
+        fscanf(file, "Card %*d: %d %d %d %d %d %d %d %d %d %d | %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+            &matrix_winning[i][0], &matrix_winning[i][1], &matrix_winning[i][2], &matrix_winning[i][3], &matrix_winning[i][4],
+            &matrix_winning[i][5], &matrix_winning[i][6], &matrix_winning[i][7], &matrix_winning[i][8], &matrix_winning[i][9],
+            &matrix_have[i][0], &matrix_have[i][1], &matrix_have[i][2], &matrix_have[i][3], &matrix_have[i][4],
+            &matrix_have[i][5], &matrix_have[i][6], &matrix_have[i][7], &matrix_have[i][8], &matrix_have[i][9],
+            &matrix_have[i][10], &matrix_have[i][11], &matrix_have[i][12], &matrix_have[i][13], &matrix_have[i][14],
+            &matrix_have[i][15], &matrix_have[i][16], &matrix_have[i][17], &matrix_have[i][18], &matrix_have[i][19],
+            &matrix_have[i][20], &matrix_have[i][21], &matrix_have[i][22], &matrix_have[i][23], &matrix_have[i][24]);
+
+
+        qsort(matrix_have[i], COLS_have_day4, sizeof(int), compare);
+        qsort(matrix_winning[i], COLS_winning_day4, sizeof(int), compare);
+
+        if (i + 1 < rowsToRead) 
+        {
+            while (fgetc(file) != '\n');
+        }
+    }
+
+    fclose(file);
+}
+int day4(char* ft) 
+{
+    int res = 1,sum=0,count = 0,k=0, currentNumhave, currentNumwin,flag=0;
+    int mathave[ROWS_day4][COLS_have_day4];
+    int matWinning[ROWS_day4][COLS_winning_day4];
+    read_matrix_from_file_day4(ft, mathave, matWinning, ROWS_day4);
+    for (int i = 0; i < ROWS_day4; i++) 
+    {
+        count = 0;
+        for (int j = 0; j < COLS_have_day4; j++)
+        {
+            currentNumhave = mathave[i][j];
+            for (int k = 0; k < COLS_winning_day4; k++)
+            {
+                currentNumwin = matWinning[i][k];
+                if (currentNumhave == currentNumwin)
+                {
+                    count++;
+                }
+            }
+        }
+        if (count == 1)
+        {
+            sum += res;
+            res = 1;
+        }
+        else
+        {
+            while (count > 1)
+            {
+                res *= 2;
+                count--;
+                flag = 1;
+            }
+            if (flag == 1)
+            {
+                sum += res;
+                flag = 0;
+                res = 1;
+            }
+        }
+        printf("\n%d", sum);
+    }
+    return sum;
+}
+
+void processCopies(Card* cards, int index, int count) {
+    while (count > 0 && (index + 1) < ROWS_day4) {
+        cards[index + count].countCards = cards[index + count].countCards * cards[index].countMatch;
+        processCopies(cards, index + 1, cards[index + 1].countMatch);
+        count--;
+    }
+}
+int calculateSum_cards(Card arr[], int size)
+{
+    int sum = 0;
+    for (int i = 0; i < size; i++)
+    {
+        sum += arr[i].countCards;
+    }
+    return sum;
+}
+int day4_b(char* ft)
+{
+    int sum = 0,count= 0;
+    int mathave[ROWS_day4][COLS_have_day4];
+    int matWinning[ROWS_day4][COLS_winning_day4];
+    Card cards[ROWS_day4];
+    for (int i = 0; i < ROWS_day4; i++)
+    {
+        cards[i].countMatch = 0;
+        cards[i].countCards = 1;
+        cards[i].flag = false;
+    }
+
+    read_matrix_from_file_day4(ft, mathave, matWinning, ROWS_day4);
+
+    for (int i = 0; i < ROWS_day4; i++) 
+    {
+        for (int j = 0; j < COLS_have_day4; j++) 
+        {
+            int currentNumhave = mathave[i][j];
+
+            for (int k = 0; k < COLS_winning_day4; k++) 
+            {
+                int currentNumwin = matWinning[i][k];
+
+                if (currentNumhave == currentNumwin) 
+                {
+                    if (i == 2)
+                    {
+                        int fdf = 0;
+                    }
+                    count++;
+                    cards[i].countMatch++;
+                    cards[i + count].countCards++;
+                    cards[i + count].flag = true;
+                }
+            }
+        }
+        
+        if (cards[i].flag == true)
+        {
+            for (int h = 1; h <= cards[i].countMatch; h++)
+            {
+                for (int g = 1; g < cards[i].countCards; g++)
+                {
+                    cards[i + h].countCards++;
+                }
+                
+            }
+        }
+        count = 0;
+    }
+    sum = calculateSum_cards(cards, ROWS_day4);
+    return sum;
+}
