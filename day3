@@ -8,11 +8,11 @@
 #define ROWS 140
 #define COLS 140
 
-int is_symbol(char ch);
+int is_symbol(char);
 int CheckIfValidNumber(char matrix[ROWS][COLS],int,int,int,int);
 int day3(char*);
-int calculateSum(int arr[], int size);
-int isAsteriskChar(char ch);
+int calculateSum(int arr[], int);
+int isAsteriskChar(char);
 int findTheNumber(char matrix[ROWS][COLS], int, int, int, int);
 int thereIs2NumbersAroundToAsterisk(char matrix[ROWS][COLS], int, int, int, int,int*,int*);
 int day3_b(char*);
