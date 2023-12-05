@@ -1,0 +1,113 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+  
+int day1(char*);
+int day1_b(char*);
+
+void main()
+{
+    int resday1 = day1("day4.txt");
+    printf("\n\n%d", res);
+    int resday1_b = day1_b("day4.txt");
+    printf("\n\n%d", resday1);
+    printf("\n\n%d", resday1_b);
+    return 0;
+}
+
+int day1(char* ft)
+{
+	int res = 0, firstDigit,lastDigit;
+	char line[100];
+	FILE* file = fopen(ft, "r");
+	if (file == NULL) {
+		printf("cant open the file\n");
+		return 1;
+	}
+	while (fgets(line, sizeof(line), file))
+	{
+		firstDigit = lastDigit = -1;
+		for(int i = 0; line[i] != '\0'; i++) 
+		{
+			if (isdigit(line[i]))
+			{
+				if (firstDigit == -1)
+				{
+					firstDigit = line[i] - '0';
+				}
+				else
+				{
+					lastDigit = line[i] - '0';
+				}
+			}
+		}
+		if (lastDigit == -1)
+		{
+			lastDigit = firstDigit;
+		}
+		res += firstDigit * 10 + lastDigit;
+	}
+	fclose(file);
+	return res;
+}
+int day1_b(char* ft)
+{
+    int res = 0, firstDigit, lastDigit;
+    char line[100];
+    char* numbers[] = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+
+    FILE* file = fopen(ft, "r");
+    if (file == NULL) {
+        printf("can't open the file\n");
+        return 1;
+    }
+
+    while (fgets(line, sizeof(line), file))
+    {
+        firstDigit = lastDigit = -1;
+
+        for (int i = 0; line[i] != '\0'; i++)
+        {
+            if (isdigit(line[i]))
+            {
+                if (firstDigit == -1)
+                {
+                    firstDigit = line[i] - '0';
+                }
+                else
+                {
+                    lastDigit = line[i] - '0';
+                }
+            }
+            else
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    if (strstr(line + i, numbers[j]) == line + i)
+                    {
+                        if (firstDigit == -1)
+                        {
+                            firstDigit = j;
+                        }
+                        else
+                        {
+                            lastDigit = j;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (lastDigit == -1)
+        {
+            lastDigit = firstDigit;
+        }
+        res += firstDigit * 10 + lastDigit;
+    }
+
+    fclose(file);
+    return res;
+}
