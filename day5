@@ -1,0 +1,646 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define numOfSeeds 20
+
+  typedef struct {
+    long long Seed;
+    long long soil;
+    long long fertilizer;
+    long long water;
+    long long light;
+    long long temperature;
+    long long humidity;
+    long long location;
+} Seed;
+
+
+void readSeedsFromFile(char* file_path, Seed seeds[numOfSeeds]);
+void readSeedMapsFromFile(char* file_path, Seed seeds[numOfSeeds]);
+void InsertToSeeds(Seed seeds[numOfSeeds],long long, long long, long long, char*);
+void readMapFromFile(FILE* file, Seed seeds[numOfSeeds], char* category);
+int minLocation(Seed arr[], int size);
+int day5(char*);
+
+long long numberExtraction(char* file_path);
+void InsertToSeedsday5_b(char* file_path, Seed* seeds);
+void readSeedMapsFromFileDay5_b(char* file_path, Seed* seeds , long long count);
+void readMapFromFileDay5_b(char* file_path, Seed* seeds, char* category, long long count);
+void InsertDay5_b(Seed* , long long , long long , long long , char* , long long );
+int day5_b(char* ft);
+
+int main()
+{
+    int res = day5_b("day5.txt");
+    printf("%d", res);
+    return 0;
+}
+
+void readSeedsFromFile(char* file_path,Seed seeds[numOfSeeds])
+{
+    int i = 0;
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return NULL;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (strstr(line, "seeds:") != NULL)
+        {
+            break;
+        }
+    }
+
+    long long number;
+    char* token = strtok(line, " ");
+    while (token != NULL) 
+    {
+        if (sscanf(token, "%lld", &number) == 1) 
+        {
+            seeds[i++].Seed = number;
+        }
+        token = strtok(NULL, " ");
+    }
+
+}
+void readSeedMapsFromFile(char* file_path, Seed seeds[numOfSeeds])
+{
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (strstr(line, "seed-to-soil map:") != NULL) {
+            readMapFromFile(file, seeds, "soil");
+        }
+        else if (strstr(line, "soil-to-fertilizer map:") != NULL) {
+            readMapFromFile(file, seeds, "fertilizer");
+        }
+        else if (strstr(line, "fertilizer-to-water map:") != NULL) {
+            readMapFromFile(file, seeds, "water");
+        }
+        else if (strstr(line, "water-to-light map:") != NULL) {
+            readMapFromFile(file, seeds, "light");
+        }
+        else if (strstr(line, "light-to-temperature map:") != NULL) {
+            readMapFromFile(file, seeds, "temperature");
+        }
+        else if (strstr(line, "temperature-to-humidity map:") != NULL) {
+            readMapFromFile(file, seeds, "humidity");
+        }
+        else if (strstr(line, "humidity-to-location map:") != NULL) {
+            readMapFromFile(file, seeds, "location");
+        }
+    }
+
+    fclose(file);
+}
+void InsertToSeeds(Seed seeds[numOfSeeds], long long destinationRangeStart, long long sourceRangeStart, long long rangeLength, char* category)
+{
+    long long num;
+    for (int i = 0; i < rangeLength && i < numOfSeeds; i++)
+    {
+        num = 0;
+        if (strcmp(category, "soil") == 0) 
+        {
+            if (seeds[i].Seed >= sourceRangeStart && seeds[i].Seed < sourceRangeStart + rangeLength) {
+                num = seeds[i].Seed - sourceRangeStart;
+                seeds[i].soil = destinationRangeStart + num;
+                if (seeds[i].soil < 0)
+                {
+                    int fdf = 0;
+                }
+            }
+            else 
+            {
+                if (seeds[i].soil == -1)
+                {
+                    seeds[i].soil = seeds[i].Seed;
+                }   
+            }
+        }
+        else if (strcmp(category, "fertilizer") == 0) {
+            if (seeds[i].soil >= sourceRangeStart && seeds[i].soil < sourceRangeStart + rangeLength) {
+                num = seeds[i].soil - sourceRangeStart;
+                seeds[i].fertilizer = destinationRangeStart + num;
+            }
+            else 
+            {
+                if (seeds[i].fertilizer == -1)
+                {
+                    seeds[i].fertilizer = seeds[i].soil;
+                }              
+            }
+        }
+        else if (strcmp(category, "water") == 0)
+        {
+            if (seeds[i].fertilizer >= sourceRangeStart && seeds[i].fertilizer < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].fertilizer - sourceRangeStart;
+                seeds[i].water = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].water == -1)
+                {
+                    seeds[i].water = seeds[i].fertilizer;
+                }     
+            }
+        }
+        else if (strcmp(category, "light") == 0)
+        {
+            if (seeds[i].water >= sourceRangeStart && seeds[i].water < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].water - sourceRangeStart;
+                seeds[i].light = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].light == -1)
+                {
+                    seeds[i].light = seeds[i].water;
+                }
+            }
+        }
+        else if (strcmp(category, "temperature") == 0)
+        {
+            if (seeds[i].light >= sourceRangeStart && seeds[i].light < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].light - sourceRangeStart;
+                seeds[i].temperature = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].temperature == -1)
+                {
+                    seeds[i].temperature = seeds[i].light;
+                }
+            }
+        }
+        else if (strcmp(category, "humidity") == 0)
+        {
+            if (seeds[i].temperature >= sourceRangeStart && seeds[i].temperature < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].temperature - sourceRangeStart;
+                seeds[i].humidity = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].humidity == -1)
+                {
+                    seeds[i].humidity = seeds[i].temperature;
+                }
+            }
+        }
+        else if (strcmp(category, "location") == 0)
+        {
+            if (seeds[i].humidity >= sourceRangeStart && seeds[i].humidity < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].humidity - sourceRangeStart;
+                seeds[i].location = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].location == -1)
+                {
+                    seeds[i].location = seeds[i].humidity;
+                }
+            }
+        }
+    }
+}
+void readMapFromFile(FILE* file, Seed seeds[numOfSeeds], char* category)
+{
+    long long dest, src, len;
+    while (fscanf(file, "%lld %lld %lld", &dest, &src, &len) == 3) 
+    {
+        if (strcmp(category, "soil") == 0) 
+        {
+            InsertToSeeds(seeds,dest, src, len,"soil");
+        }
+        else if (strcmp(category, "fertilizer") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "fertilizer");
+        }
+        else if (strcmp(category, "water") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "water");
+        }
+        else if (strcmp(category, "light") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "light");
+        }
+        else if (strcmp(category, "temperature") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "temperature");
+        }
+        else if (strcmp(category, "humidity") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "humidity");
+        }
+        else if (strcmp(category, "location") == 0) 
+        {
+            InsertToSeeds(seeds, dest, src, len, "location");
+        }
+    }
+}
+int minLocation(Seed arr[], int size)
+{
+    long long min = arr[0].location;
+    for (int i = 1; i < size; i++)
+    {
+        if (arr[i].location < min)
+        {
+            min = arr[i].location;
+        }
+    }
+    return min;
+}
+int day5(char* ft)
+{
+    Seed seeds[numOfSeeds];
+    for (int i = 0; i < numOfSeeds; i++)
+    {
+        seeds[i].Seed = -1;
+        seeds[i].soil = -1;
+        seeds[i].fertilizer = -1;
+        seeds[i].water = -1;
+        seeds[i].light = -1;
+        seeds[i].temperature = -1;
+        seeds[i].humidity = -1;
+        seeds[i].location = -1;
+    }
+    readSeedsFromFile(ft, seeds);
+    readSeedMapsFromFile(ft, seeds);
+    return minLocation(seeds, numOfSeeds);
+}
+
+long long numberExtraction(char* file_path)
+{
+    int j = 0,k=0;
+    int count = 0;
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return NULL;
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (strstr(line, "seeds:") != NULL)
+        {
+           break;
+        }
+    }
+
+    long long number, values;
+    char* token = strtok(line, " ");
+    token = strtok(NULL, " ");
+    while (token != NULL)
+    {
+        int i = 0 ,num1=0, num2 = 0;
+        while (isdigit(token[i]))
+        {
+            num1 = num1 * 10 + token[i] - '0';
+            i++;
+        }
+        i = 0;
+        token = strtok(NULL, " ");
+        while (isdigit(token[i]))
+        {
+            num2 = num2 * 10 + token[i] - '0';
+            i++;
+        }
+        count += num2;
+        token = strtok(NULL, " ");
+    }
+
+    fclose(file);
+    return count;
+}
+
+
+
+
+long long numberExtraction(char* file_path)
+{
+    int j = 0,k=0;
+    int count = 0;
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return NULL;
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (strstr(line, "seeds:") != NULL)
+        {
+           break;
+        }
+    }
+
+    long long number, values;
+    char* token = strtok(line, " ");
+    token = strtok(NULL, " ");
+    while (token != NULL)
+    {
+        int i = 0 ,num1=0, num2 = 0;
+        while (isdigit(token[i]))
+        {
+            num1 = num1 * 10 + token[i] - '0';
+            i++;
+        }
+        i = 0;
+        token = strtok(NULL, " ");
+        while (isdigit(token[i]))
+        {
+            num2 = num2 * 10 + token[i] - '0';
+            i++;
+        }
+        count += num2;
+        token = strtok(NULL, " ");
+    }
+
+    fclose(file);
+    return count;
+}
+
+void InsertToSeedsday5_b(char* file_path, Seed* seeds)
+{
+    int j = 0, k = 0;
+    int count = 0;
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return NULL;
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (strstr(line, "seeds:") != NULL)
+        {
+            break;
+        }
+    }
+
+    long long number, values;
+    char* token = strtok(line, " ");
+    token = strtok(NULL, " ");
+    while (token != NULL)
+    {
+        int i = 0, num1 = 0, num2 = 0;
+        while (isdigit(token[i]))
+        {
+            num1 = num1 * 10 + token[i] - '0';
+            i++;
+        }
+        i = 0;
+        token = strtok(NULL, " ");
+        while (isdigit(token[i]))
+        {
+            num2 = num2 * 10 + token[i] - '0';
+            i++;
+        }
+        for (long long j = 0; j < num2; j++)
+        {
+            seeds[k++].Seed = num1 + j;
+        }
+        
+        token = strtok(NULL, " ");
+    }
+
+    fclose(file);
+}
+
+void readSeedMapsFromFileDay5_b(char* file_path, Seed* seeds, long long count)
+{
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        perror("Cannot open file");
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file) != NULL) 
+    {
+        if (strstr(line, "seed-to-soil map:") != NULL) 
+        {
+            readMapFromFileDay5_b(file, seeds, "soil", count);
+        }
+        else if (strstr(line, "soil-to-fertilizer map:") != NULL) 
+        {
+            readMapFromFileDay5_b(file, seeds, "fertilizer", count);
+        }
+        else if (strstr(line, "fertilizer-to-water map:") != NULL) {
+            readMapFromFileDay5_b(file, seeds, "water", count);
+        }
+        else if (strstr(line, "water-to-light map:") != NULL) {
+            readMapFromFileDay5_b(file, seeds, "light", count);
+        }
+        else if (strstr(line, "light-to-temperature map:") != NULL) {
+            readMapFromFileDay5_b(file, seeds, "temperature", count);
+        }
+        else if (strstr(line, "temperature-to-humidity map:") != NULL) {
+            readMapFromFileDay5_b(file, seeds, "humidity", count);
+        }
+        else if (strstr(line, "humidity-to-location map:") != NULL) {
+            readMapFromFileDay5_b(file, seeds, "location", count);
+        }
+    }
+
+    fclose(file);
+}
+
+void readMapFromFileDay5_b(char* file_path, Seed* seeds, char* category,long long count)
+{
+    long long dest, src, len;
+    while (fscanf(file_path, "%lld %lld %lld", &dest, &src, &len) == 3)
+    {
+        if (strcmp(category, "soil") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "soil", count);
+        }
+        else if (strcmp(category, "fertilizer") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "fertilizer", count);
+        }
+        else if (strcmp(category, "water") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "water", count);
+        }
+        else if (strcmp(category, "light") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "light", count);
+        }
+        else if (strcmp(category, "temperature") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "temperature", count);
+        }
+        else if (strcmp(category, "humidity") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "humidity", count);
+        }
+        else if (strcmp(category, "location") == 0)
+        {
+            InsertDay5_b(seeds, dest, src, len, "location", count);
+        }
+    }
+}
+
+void InsertDay5_b(Seed* seeds, long long destinationRangeStart, long long sourceRangeStart, long long rangeLength, char* category,long long count)
+{
+    long long num;
+    for (int i = 0; i < count; i++)
+    {
+        num = 0;
+        if (strcmp(category, "soil") == 0)
+        {
+            if (seeds[i].Seed >= sourceRangeStart && seeds[i].Seed < sourceRangeStart + rangeLength) {
+                num = seeds[i].Seed - sourceRangeStart;
+                seeds[i].soil = destinationRangeStart + num;
+                if (seeds[i].soil < 0)
+                {
+                    int fdf = 0;
+                }
+            }
+            else
+            {
+                if (seeds[i].soil == -1)
+                {
+                    seeds[i].soil = seeds[i].Seed;
+                }
+            }
+        }
+        else if (strcmp(category, "fertilizer") == 0) 
+        {
+            if (seeds[i].soil >= sourceRangeStart && seeds[i].soil < sourceRangeStart + rangeLength) {
+                num = seeds[i].soil - sourceRangeStart;
+                seeds[i].fertilizer = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].fertilizer == -1)
+                {
+                    seeds[i].fertilizer = seeds[i].soil;
+                }
+            }
+        }
+        else if (strcmp(category, "water") == 0)
+        {
+            if (seeds[i].fertilizer >= sourceRangeStart && seeds[i].fertilizer < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].fertilizer - sourceRangeStart;
+                seeds[i].water = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].water == -1)
+                {
+                    seeds[i].water = seeds[i].fertilizer;
+                }
+            }
+        }
+        else if (strcmp(category, "light") == 0)
+        {
+            if (seeds[i].water >= sourceRangeStart && seeds[i].water < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].water - sourceRangeStart;
+                seeds[i].light = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].light == -1)
+                {
+                    seeds[i].light = seeds[i].water;
+                }
+            }
+        }
+        else if (strcmp(category, "temperature") == 0)
+        {
+            if (seeds[i].Seed == 63)
+            {
+                int dgf = 0;
+            }
+            if (seeds[i].light >= sourceRangeStart && seeds[i].light < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].light - sourceRangeStart;
+                seeds[i].temperature = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].temperature == -1)
+                {
+                    seeds[i].temperature = seeds[i].light;
+                }
+            }
+        }
+        else if (strcmp(category, "humidity") == 0)
+        {
+            if (seeds[i].temperature >= sourceRangeStart && seeds[i].temperature < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].temperature - sourceRangeStart;
+                seeds[i].humidity = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].humidity == -1)
+                {
+                    seeds[i].humidity = seeds[i].temperature;
+                }
+            }
+        }
+        else if (strcmp(category, "location") == 0)
+        {
+            if (seeds[i].humidity >= sourceRangeStart && seeds[i].humidity < sourceRangeStart + rangeLength)
+            {
+                num = seeds[i].humidity - sourceRangeStart;
+                seeds[i].location = destinationRangeStart + num;
+            }
+            else
+            {
+                if (seeds[i].location == -1)
+                {
+                    seeds[i].location = seeds[i].humidity;
+                }
+            }
+        }
+    }
+}
+
+
+int day5_b(char* ft)
+{
+    long long count = numberExtraction(ft);
+    Seed* seeds = (Seed*)malloc(count * sizeof(Seed));
+    if (seeds == NULL) 
+    {
+        printf("Error- malloc faild\n");
+        return -400;
+    }
+    InsertToSeedsday5_b(ft, seeds);
+    for (long long i = 0; i < count; i++)
+    {
+        seeds[i].soil = -1;
+        seeds[i].fertilizer = -1;
+        seeds[i].water = -1;
+        seeds[i].light = -1;
+        seeds[i].temperature = -1;
+        seeds[i].humidity = -1;
+        seeds[i].location = -1;
+    }
+    readSeedMapsFromFileDay5_b(ft, seeds, count);
+    long long min = minLocation(seeds, count);
+    free(seeds);
+    return min;
+}
