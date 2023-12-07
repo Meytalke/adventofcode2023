@@ -1,0 +1,103 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+int waysToWinDay6(int time[], int distance[], int n);
+void ExtractDay6_b(int time[], int distance[], int n, long long* timeNumber, long long* distanceNumber);
+int countDigits(int number);
+int waysToWinDay6_b(int time[], int distance[], int n);
+
+int main()
+{
+    int time[] = { 44, 82,69,81};
+    int distance[] = { 202, 1076, 1138,1458};
+    int n = sizeof(time) / sizeof(time[0]);
+
+    int result = waysToWinDay6(time, distance, n);
+    printf("Total ways to win: %d\n", result);
+    int result2 = waysToWinDay6_b(time, distance, n);
+    printf("Total ways to win: %d\n", result2);
+    return 0;
+}
+
+int waysToWinDay6(int time[], int distance[], int n)
+{
+    long long ways = 1;
+
+    for (int i = 0; i < n; i++) 
+    {
+        int currentWays = 0;
+
+        for (int j = 1; j <= time[i]; j++)
+        {
+            if (j * (time[i] - j) > distance[i])
+            {
+                currentWays++;
+            }
+        }
+
+        ways *= currentWays;
+    }
+
+    return ways;
+}
+
+void ExtractDay6_b(int time[], int distance[], int n , long long* timeNumber, long long* distanceNumber)
+{
+    *timeNumber = *distanceNumber = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (i != 0)
+        {
+            int digitstime = countDigits(time[i]);
+            int digitsdistance = countDigits(distance[i]);
+            while (digitstime > 0)
+            {
+                *timeNumber *= 10;
+                digitstime--;
+            }
+            while (digitsdistance > 0)
+            {
+                *distanceNumber *= 10;
+                digitsdistance--;
+            }
+            *timeNumber += time[i];
+            *distanceNumber += distance[i];
+        }
+        else
+        {
+            *timeNumber += time[i];
+            *distanceNumber += distance[i];
+        }
+
+    }
+}
+
+int countDigits(int number)
+{
+    int digitCount = 0;
+
+    while (number != 0) {
+        number /= 10;
+        digitCount++;
+    }
+
+    return digitCount;
+}
+
+int waysToWinDay6_b(int time[], int distance[],int n)
+{
+    long long timeNumber=0, distanceNumber=0 , currentWays=0;
+    ExtractDay6_b(time, distance, n,&timeNumber, &distanceNumber);
+    for (int j = 1; j <= timeNumber; j++)
+    {
+        if (j * (timeNumber - j) > distanceNumber)
+        {
+            currentWays++;
+        }
+    }
+    return currentWays;
+}
