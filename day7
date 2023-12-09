@@ -1,0 +1,242 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
+
+struct Hand {
+    int score;
+    int bid;
+};
+
+int intPow( int base,  int exponent);
+int scoreHand(char* hand, int handLength,char part);
+int scoreCard(char card,char part);
+int scoreHand_b(char* hand, int handLength);
+int day7(char* file_path);
+int day7_b(char* file_path);
+
+int main()
+{
+    int resday7 = day7("day7.txt");
+    printf("%d", resday7);
+
+    int resday7_b = day7_b("day7.txt");
+    printf("\n%d", resday7_b);
+    return 0;
+}
+
+int intPow(int base, int exponent)
+{
+    if (exponent == 0) return 1;
+    int result = base;
+    for (int i = 1; i < exponent; ++i) 
+    {
+        result *= base;
+    }
+    return result;
+}
+
+int scoreHand(char* hand, int handLength,char part)
+{
+    int handScore = 0;
+    int rawScore = 0;
+    int numberOfJokers = 0;
+    int base = (part == 'A') ? 15 : 13;
+
+    for (int i = 0; i < handLength; ++i) 
+    {
+        if (hand[i] != 'J') {
+            handScore++;
+            rawScore += scoreCard(hand[i],'A') * intPow(base, 4 - i);
+
+            for (int j = i + 1; j < handLength; ++j) {
+                if (hand[i] == hand[j]) {
+                    handScore++;
+                }
+            }
+        }
+        else {
+            numberOfJokers++;
+        }
+    }
+
+    if (numberOfJokers > 0) {
+        if (handScore >= 9) {
+            handScore = 15;
+        }
+        else if (handScore == 8) {
+            handScore = 11;
+        }
+        else if (handScore == 7) {
+            handScore += numberOfJokers * 2;
+        }
+        else if (handScore == 6) {
+            handScore = 8;
+        }
+        else {
+            handScore = 6;
+        }
+    }
+
+    return intPow(base, 5) * handScore + rawScore;
+}
+
+int scoreCard(char card,char part)
+{
+    if (part == 'A')
+    {
+        if (card >= '2' && card <= '9') return card - '0';
+        else if (card == 'T') return 10;
+        else if (card == 'J') return 11;
+        else if (card == 'Q') return 12;
+        else if (card == 'K') return 13;
+        else if (card == 'A') return 14;
+        else return -1;
+    }
+    else if (part == 'B')
+    {
+        if (card >= '2' && card <= '9') return card - '0';
+        else if (card == 'T') return 9;
+        else if (card == 'J') return 0;
+        else if (card == 'Q') return 10;
+        else if (card == 'K') return 11;
+        else return 12;
+    }
+    
+}
+
+int scoreHand_b(char* hand, int handLength)
+{
+    int handScore = 0;
+    int rawScore = 0;
+    int numberOfJokers = 0;
+    for (int i = 0; i < handLength; ++i) 
+    {
+        handScore++;
+        rawScore += scoreCard(hand[i],'B') * intPow(13, 4 - i);
+        for (int j = i + 1; j < handLength; ++j) 
+        {
+            if (hand[i] == hand[j]) 
+            {
+                handScore++;
+            }
+        }
+        if (hand[i] == 'J') 
+        {
+            numberOfJokers++;
+        }
+    }
+    if (numberOfJokers > 0) 
+    {
+        if (handScore >= 9) 
+        {
+            handScore = 15;
+        }
+        else if (handScore == 8) 
+        {
+            handScore = 11;
+        }
+        else if (handScore == 7) 
+        {
+            handScore += numberOfJokers * 2;
+        }
+        else if (handScore == 6) 
+        {
+            handScore = 8;
+        }
+        else 
+        {
+            handScore = 6;
+        }
+    }
+
+    return intPow(13, 5) * handScore + rawScore;
+}
+
+int day7(char* file_path)
+{
+    FILE* file = fopen(file_path, "r");
+    char line[256];
+    if (!file)
+    {
+        perror("Error opening file");
+        return 1;
+    }
+
+    int handSize = 1000;
+    struct Hand* hands = (struct Hand*)malloc(handSize * sizeof(struct Hand));
+
+    int numberOfHands = 0;
+    while (fgets(line, sizeof(line), file) != NULL) 
+    {
+        if (numberOfHands == handSize) 
+        {
+            handSize <<= 1;
+            hands = realloc(hands, handSize * sizeof(struct Hand));
+        }
+
+        hands[numberOfHands].score = scoreHand(line, 5,'A');
+        hands[numberOfHands].bid = atoi(line + 6);
+        ++numberOfHands;
+    }
+
+    fclose(file);
+
+    qsort(hands, numberOfHands, sizeof(struct Hand), compare);
+
+    int total = 0;
+    for (size_t i = 0; i < numberOfHands; ++i) 
+    {
+        total += hands[i].bid * (i + 1);
+    }
+
+    free(hands);
+    return total;
+}
+
+int day7_b(char* file_path)
+{
+    FILE* file = fopen(file_path, "r");
+    char line[256];
+    if (!file) 
+    {
+        perror("Error opening file");
+        return 1;
+    }
+
+    int handSize = 1000;
+    struct Hand* hands = (struct Hand*)malloc(handSize * sizeof(struct Hand));
+
+    int numberOfHands = 0;
+    while (fgets(line, sizeof(line), file) != NULL) 
+    {
+        if (numberOfHands == handSize) 
+        {
+            handSize <<= 1;
+            hands = realloc(hands, handSize * sizeof(struct Hand));
+            if (!hands)
+            {
+                perror("Error realloc");
+                return 1;
+            }
+        }
+
+        hands[numberOfHands].score = scoreHand_b(line, 5);
+        hands[numberOfHands].bid = atoi(line + 6);
+        ++numberOfHands;
+    }
+
+    fclose(file);
+
+    qsort(hands, numberOfHands, sizeof(struct Hand), compare);
+
+    int total = 0;
+    for (size_t i = 0; i < numberOfHands; ++i) {
+        total += hands[i].bid * (i + 1);
+    }
+
+    free(hands);
+    return total;
+}
