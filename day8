@@ -1,51 +1,198 @@
-long long day8(char* file_path)
-{
-    long long steps = 0;
-    int i = 0;
-    Step current_step;
-    char side[300], res[] = "AAA", end[] = "ZZZ";
-    char c;
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdbool.h>
 
+#define MAX_LINE_LENGTH 300
+#define stepsArrayNum 738
+
+typedef struct {
+    char curr[16];
+    char left[4];
+    char right[4];
+} Step;
+
+int binarySearch(Step stepsArray[], int numRows, char* target);
+void readStepsFromFile(char* file_path, Step stepsArray[stepsArrayNum], Step* Firststeps, char side[MAX_LINE_LENGTH]);
+int compareSteps(const void* a, const void* b);
+
+long long day8(char* file_path);
+int readStepsFromFile_b(char* file_path, Step stepsArray[stepsArrayNum], Step Firststeps[6], char side[MAX_LINE_LENGTH],int* size);
+long long day8_b(char* file_path);
+
+int main()
+{
+    long long resday8 = day8("day8.txt");
+    printf("%lld", resday8);
+
+    long long resday7_8 = day8_b("day8.txt");
+    printf("\n%lld", resday7_8);
+    return 0;
+}
+
+
+int binarySearch(Step stepsArray[], int numRows, char* target)
+{
+    int low = 0, high = numRows - 1;
+
+    while (low <= high) 
+    {
+        int mid = low + (high - low) / 2;
+        int cmp = strcmp(stepsArray[mid].curr, target);
+
+        if (cmp == 0) 
+        {
+            return mid;
+        }
+        else if (cmp < 0) 
+        {
+            low = mid + 1;
+        }
+        else 
+        {
+            high = mid - 1;
+        }
+    }
+
+    return -1;
+}
+
+void readStepsFromFile(char* file_path, Step stepsArray[stepsArrayNum], Step* Firststeps, char side[MAX_LINE_LENGTH])
+{
+    int numSteps = 0;
     FILE* file = fopen(file_path, "r");
     if (!file) {
         perror("Error opening file");
-        return 1;
+        return -1;
+    }
+    if (fgets(side, MAX_LINE_LENGTH, file) == NULL) {
+        fclose(file);
     }
 
-    if (fgets(side, sizeof(side), file) == NULL) {
-        fclose(file);
-        return steps;
+    while (numSteps < stepsArrayNum && fscanf(file, "%s = (%3s, %3s)\n", stepsArray[numSteps].curr, stepsArray[numSteps].left, stepsArray[numSteps].right) == 3) {
+        numSteps++;
     }
-    fscanf(file, "%s = (%3s, %3s)\n", current_step.curr, current_step.left, current_step.right);
-    
-    while (strcmp(res, end) != 0)
+    fclose(file);
+    if (numSteps > 0) 
     {
-        if (side[i] == '\0')
+        *Firststeps = stepsArray[0];
+        qsort(stepsArray, numSteps, sizeof(Step), compareSteps);
+    }
+}
+
+int compareSteps(const void* a, const void* b)
+{
+    return strcmp(((Step*)a)->curr, ((Step*)b)->curr);
+}
+
+long long day8(char* file_path)
+{
+    long long steps = 0;
+    int i = 0,flag=0, index;
+    Step StepsArr[stepsArrayNum], current_step;
+    char side[300], res[] = "AAA", end[] = "ZZZ", *target;
+
+    readStepsFromFile(file_path, StepsArr, &current_step, side);
+    
+    while (strcmp(res, end) != 0) 
+    {
+        if (side[i] == '\n') 
+        {
+            i = 0;
+        }
+        else 
+        {
+            target = (side[i] == 'R') ? current_step.right : current_step.left;
+            index = binarySearch(StepsArr, stepsArrayNum, target);  
+            if (index != -1 && strcmp(StepsArr[index].curr, target) == 0) 
+            {
+                strcpy(res, target);
+                strcpy(current_step.curr, StepsArr[index].curr);
+                strcpy(current_step.left, StepsArr[index].left);
+                strcpy(current_step.right, StepsArr[index].right);
+                steps++;
+                i++;
+            }
+        }
+        
+    }
+    return steps;
+}
+
+int readStepsFromFile_b(char* file_path, Step stepsArray[stepsArrayNum], Step Firststeps[6], char side[MAX_LINE_LENGTH],int *size)
+{
+    int numSteps = 0, i=0,j=0;
+    FILE* file = fopen(file_path, "r");
+    if (!file) {
+        perror("Error opening file");
+        return -1;
+    }
+    if (fgets(side, MAX_LINE_LENGTH, file) == NULL) {
+        fclose(file);
+    }
+
+    while (numSteps < stepsArrayNum && fscanf(file, "%s = (%3s, %3s)\n", stepsArray[numSteps].curr, stepsArray[numSteps].left, stepsArray[numSteps].right) == 3) {
+        numSteps++;
+    }
+    fclose(file);
+    if (numSteps > 0)
+    { 
+        qsort(stepsArray, numSteps, sizeof(Step), compareSteps);
+    }
+    for (i = 0; i < stepsArrayNum; i++)
+    {
+        if (stepsArray[i].curr[2] == 'A')
+        {
+            Firststeps[j++] = stepsArray[i];
+        }
+    }
+    *size = j;
+    return 0;
+}
+
+long long day8_b(char* file_path)
+{
+    long long steps = 0;
+    int i = 0, index,size;
+    Step StepsArr[stepsArrayNum], current_step[6], res[6];
+    char side[300], end= 'Z', *target;
+
+    if (readStepsFromFile_b(file_path, StepsArr, &current_step, side, &size) != 0)
+    {
+        return -1;  // Error in reading file
+    }
+    for (int j = 0; j < 6; j++)
+    {
+        res[j].curr[0] = 'A';
+        res[j].curr[1] = 'A';
+        res[j].curr[2] = 'A';
+    }
+    while (res[0].curr[2] != end || res[1].curr[2] != end || res[2].curr[2] != end || res[3].curr[2] != end || res[4].curr[2] != end || res[5].curr[2] != end)
+    {
+        if (side[i] == '\n')
         {
             i = 0;
         }
         else
         {
-            char* target = (side[i] == 'R') ? current_step.right : current_step.left;
-            rewind(file);
-            while (fgets(current_step.curr, sizeof(current_step.curr), file) != NULL)
+            for (int j = 0; j < size; j++)
             {
-                if (strstr(current_step.curr, target) != NULL && current_step.curr[4] == '=' && strncmp(current_step.curr, target, 3) == 0)
+                target = (side[i] == 'R') ? current_step[j].right : current_step[j].left;
+                index = binarySearch(StepsArr, stepsArrayNum, target);
+                if (index != -1 && strcmp(StepsArr[index].curr, target) == 0)
                 {
-                    strcpy(res, target);
-                    current_step.left[0] = current_step.curr[7];
-                    current_step.left[1] = current_step.curr[8];
-                    current_step.left[2] = current_step.curr[9];
-                    current_step.right[0] = current_step.curr[12];
-                    current_step.right[1] = current_step.curr[13];
-                    current_step.right[2] = current_step.curr[14];
-                    steps++;
-                    break;
+                    strcpy(res[j].curr, target);
+                    strcpy(current_step[j].curr, StepsArr[index].curr);
+                    strcpy(current_step[j].left, StepsArr[index].left);
+                    strcpy(current_step[j].right, StepsArr[index].right);
                 }
-            }
+            }  
+            steps++;
+            i++;
         }
-        i++;
+
     }
-    fclose(file);
     return steps;
 }
