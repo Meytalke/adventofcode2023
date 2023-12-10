@@ -1,0 +1,51 @@
+long long day8(char* file_path)
+{
+    long long steps = 0;
+    int i = 0;
+    Step current_step;
+    char side[300], res[] = "AAA", end[] = "ZZZ";
+    char c;
+
+    FILE* file = fopen(file_path, "r");
+    if (!file) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    if (fgets(side, sizeof(side), file) == NULL) {
+        fclose(file);
+        return steps;
+    }
+    fscanf(file, "%s = (%3s, %3s)\n", current_step.curr, current_step.left, current_step.right);
+    
+    while (strcmp(res, end) != 0)
+    {
+        if (side[i] == '\0')
+        {
+            i = 0;
+        }
+        else
+        {
+            char* target = (side[i] == 'R') ? current_step.right : current_step.left;
+            rewind(file);
+            while (fgets(current_step.curr, sizeof(current_step.curr), file) != NULL)
+            {
+                if (strstr(current_step.curr, target) != NULL && current_step.curr[4] == '=' && strncmp(current_step.curr, target, 3) == 0)
+                {
+                    strcpy(res, target);
+                    current_step.left[0] = current_step.curr[7];
+                    current_step.left[1] = current_step.curr[8];
+                    current_step.left[2] = current_step.curr[9];
+                    current_step.right[0] = current_step.curr[12];
+                    current_step.right[1] = current_step.curr[13];
+                    current_step.right[2] = current_step.curr[14];
+                    steps++;
+                    break;
+                }
+            }
+        }
+        i++;
+    }
+    fclose(file);
+    return steps;
+}
